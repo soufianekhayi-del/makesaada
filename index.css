@@ -1,0 +1,13 @@
+body {
+  background-color: #FAF3E0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide scrollbar for cleaner mobile look */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

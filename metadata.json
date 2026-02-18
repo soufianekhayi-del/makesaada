@@ -1,0 +1,7 @@
+{
+  "name": "Tadamon",
+  "description": "A mobile-first community donation platform for Morocco connecting givers and receivers with dignity and anonymity.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

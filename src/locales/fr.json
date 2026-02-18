@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "Chargement...",
+        "error": "Une erreur est survenue",
+        "back": "Retour",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+    },
+    "nav": {
+        "home": "Accueil",
+        "create": "Publier",
+        "chat": "Discussions",
+        "profile": "Profil"
+    },
+    "onboarding": {
+        "welcome": "Bienvenue sur Tadamon",
+        "subtitle": "Connecter les voisins pour une meilleure communauté",
+        "giver": "Je veux Donner",
+        "receiver": "J'ai besoin d'Aide",
+        "continue": "Continuer",
+        "namePlaceholder": "Votre Nom (ou Pseudonyme)",
+        "cityLabel": "Ville",
+        "start": "Commencer"
+    },
+    "home": {
+        "requestsNearby": "Demandes à proximité",
+        "donationsNearby": "Dons à proximité",
+        "community": "Communauté",
+        "radius": "Dans un rayon de {{distance}}km",
+        "viewRequests": "Demandes",
+        "viewNeighbors": "Voisins",
+        "filterAll": "Tout",
+        "filterFood": "Nourriture",
+        "filterClothes": "Vêtements",
+        "emptyRequests": "Personne ne demande d'aide à proximité pour le moment.",
+        "emptyDonations": "Aucun don disponible à proximité pour le moment.",
+        "offerHelp": "Proposer de l'aide",
+        "contactGiver": "Contacter le donneur",
+        "reachOut": "Contacter",
+        "requested": "Demandé",
+        "anonymous": "Anonyme",
+        "neighbor": "Voisin"
+    },
+    "create": {
+        "giveBack": "Donner en retour",
+        "askHelp": "Demander de l'aide",
+        "whatOffering": "Que proposez-vous ?",
+        "whatNeed": "De quoi avez-vous besoin ?",
+        "food": "Nourriture",
+        "clothes": "Vêtements",
+        "others": "Autres",
+        "titleLabel": "Titre",
+        "descLabel": "Description",
+        "quantityLabel": "Quantité",
+        "postDonation": "Publier le don",
+        "postRequest": "Publier la demande",
+        "anonymous": "Publier anonymement",
+        "anonymousDesc": "Masquer votre identité jusqu'au match"
+    },
+    "profile": {
+        "title": "Profil",
+        "myProfile": "Mon Profil",
+        "editProfile": "Modifier le profil",
+        "mealsShared": "Repas Partagés",
+        "itemsDonated": "Articles Donnés",
+        "impact": "Mon Impact",
+        "history": "Historique",
+        "settings": "Paramètres",
+        "locationSettings": "Paramètres de localisation",
+        "notifications": "Notifications",
+        "language": "Langue",
+        "logout": "Se Déconnecter",
+        "signOut": "Se Déconnecter"
+    },
+    "delivery": {
+        "title": "Support de Livraison",
+        "subtitle": "Besoin d'aide pour transporter un don ? Voici nos chauffeurs communautaires.",
+        "fastDelivery": "Livraison Rapide",
+        "smallPackages": "Petits Colis",
+        "foodDelivery": "Livraison de Nourriture",
+        "note": "Note : Les frais de livraison (le cas échéant) sont arrangés directement avec le chauffeur. La plupart opèrent sur la base du bénévolat ou de pourboires."
+    },
+    "landing": {
+        "title": "Aidez les voisins,\n<span class=\"text-morocco-green\">Construisez votre communauté.</span>",
+        "subtitle": "Tadamon est la première plateforme au Maroc pour connecter les voisins. Partagez nourriture, vêtements et services en toute sécurité.",
+        "ctaStart": "Rejoindre",
+        "ctaLogin": "Connexion",
+        "ctaJourney": "Commencer",
+        "disclaimerTitle": "Avis Important",
+        "disclaimerText": "Nous ne prenons pas d'argent et ne sommes pas responsables des transactions financières.",
+        "disclaimerFree": "La plateforme est 100% gratuite.",
+        "statFood": "Nourriture Sauvée",
+        "statClothes": "Vêtements Donnés",
+        "statFamilies": "Familles Aidées",
+        "feature1Title": "Qui sommes-nous ?",
+        "feature1Desc": "Une initiative communautaire pour connecter les gens. Nous croyons en la solidarité.",
+        "feature2Title": "Notre Objectif",
+        "feature2Desc": "Faciliter le don sans gêne. Nous avons tous besoin d'aide parfois.",
+        "footer": "© 2026 Tadamon. Fait avec amour au Maroc 🇲🇦"
+    },
+    "auth": {
+        "loginTitle": "Connexion",
+        "registerTitle": "Créer un compte",
+        "nameLabel": "Nom Complet",
+        "emailLabel": "Adresse Email",
+        "passwordLabel": "Mot de passe",
+        "confirmPasswordLabel": "Confirmer le mot de passe",
+        "submitLogin": "Se connecter",
+        "submitRegister": "S'inscrire",
+        "switchToRegister": "Pas de compte ? S'inscrire",
+        "switchToLogin": "Vous avez déjà un compte ? Connexion",
+        "error": "Erreur d'authentification"
+    },
+    "chat": {
+        "title": "Messages",
+        "noChats": "Pas encore de discussions actives",
+        "startChat": "Proposez de l'aide pour démarrer une conversation",
+        "typeMessage": "Écrivez un message...",
+        "meetingPoint": "Point de Rencontre",
+        "chooseLocation": "Choisir un Point de Rencontre",
+        "sharedLocation": "Localisation partagée",
+        "currentLocation": "Ma Position Actuelle",
+        "viewOnMaps": "Voir sur la carte",
+        "directMessage": "Message Direct"
+    },
+    "status": {
+        "AVAILABLE": "DISPONIBLE",
+        "TAKEN": "PRIS",
+        "COMPLETED": "TERMINÉ"
+    },
+    "placeholders": {
+        "foodTitle": "ex: Tajine Chaud",
+        "foodQty": "ex: 2 portions",
+        "foodDesc": "Décrivez l'état, les infos diététiques ou les instructions de retrait...",
+        "requestTitle": "ex: Dîner pour 2",
+        "requestQty": "ex: 2 portions",
+        "requestDesc": "Décrivez ce dont vous avez besoin et pourquoi..."
+    }
+}
