@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Heart, HandHeart, ShieldCheck, Eye, EyeOff, MapPin } from 'lucide-react';
+import { Heart, HandHeart, ShieldCheck, Eye, EyeOff, MapPin, Building2, ChevronDown } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { UserRole } from '../types';
 import { api } from '../services/api';
+import { MOROCCAN_CITIES } from '../constants/cities';
 
 interface OnboardingProps {
   onComplete: (user: any) => void;
@@ -18,13 +19,15 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [isLoginMode, setIsLoginMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [locError, setLocError] = useState(false);
+  const [locationMode, setLocationMode] = useState<'GPS' | 'CITY' | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     username: '',
     password: '',
-    city: 'GPS Location',
+    city: '',
     latitude: 0,
-    longitude: 0
+    longitude: 0,
+    locationMode: 'GPS' // Default for backend, but UI will override
   });
 
   const requestLocation = () => {
@@ -35,13 +38,16 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           setFormData(prev => ({
             ...prev,
             latitude: position.coords.latitude,
-            longitude: position.coords.longitude
+            longitude: position.coords.longitude,
+            city: 'GPS Location',
+            locationMode: 'GPS'
           }));
+          setLocationMode('GPS');
         },
         (error) => {
           console.error("Location error:", error);
           setLocError(true);
-          alert("GPS Permission Denied. Please enable location services in your browser settings to continue.");
+          // Don't alert immediately, just show error state in UI
         }
       );
     } else {
@@ -50,11 +56,19 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     }
   };
 
-  React.useEffect(() => {
-    if (step === 3 && !isLoginMode) {
-      requestLocation();
+  const handleCitySelect = (cityName: string) => {
+    const cityData = MOROCCAN_CITIES.find(c => c.name === cityName);
+    if (cityData) {
+      setFormData(prev => ({
+        ...prev,
+        city: cityData.name,
+        latitude: cityData.lat,
+        longitude: cityData.lng,
+        locationMode: 'CITY'
+      }));
+      setLocationMode('CITY');
     }
-  }, [step, isLoginMode]);
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -92,12 +106,18 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           role,
           city: formData.city,
           latitude: formData.latitude,
-          longitude: formData.longitude
+          longitude: formData.longitude,
+          // We might need to pass locationMode to backend if supported, 
+          // but for now latitude/longitude is enough to place them.
         });
       }
 
       if (res && res.user) {
-        onComplete(res.user);
+        // If user registered with CITY mode, we might want to store that preference
+        // locally or ensuring backend returns it used for App.tsx state.
+        // For now, onComplete passes the user object.
+        const userWithMode = { ...res.user, locationMode: locationMode || 'GPS' };
+        onComplete(userWithMode);
       }
     } catch (error: any) {
       console.error(error);
@@ -107,9 +127,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     }
   };
 
-
-
-  // Login Form View
   // Login Form View
   if (isLoginMode) {
     return (
@@ -343,44 +360,91 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               </div>
             </div>
 
+            {/* Location Selection Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t('onboarding_new.location_required')}
               </label>
 
-              <div className={`p-3 rounded-xl border flex items-center justify-between ${formData.latitude !== 0 ? 'border-morocco-green bg-morocco-green/5' : 'border-red-200 bg-red-50'
-                }`}>
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${formData.latitude !== 0 ? 'bg-morocco-green text-white' : 'bg-red-100 text-red-500'
-                    }`}>
-                    <MapPin size={20} />
-                  </div>
-                  <div>
-                    <p className={`text-sm font-bold ${formData.latitude !== 0 ? 'text-morocco-green' : 'text-red-500'
+              {/* Toggle / Tabs */}
+              <div className="flex gap-2 mb-2">
+                <button
+                  onClick={requestLocation}
+                  className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-2 ${locationMode === 'GPS'
+                    ? 'border-morocco-green bg-morocco-green/10 text-morocco-green'
+                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                    }`}
+                >
+                  <MapPin size={18} />
+                  GPS Location
+                </button>
+                <button
+                  onClick={() => {
+                    setLocationMode('CITY');
+                    setFormData(prev => ({
+                      ...prev,
+                      latitude: 0, // Reset until city selected
+                      city: '',
+                      locationMode: 'CITY'
+                    }));
+                  }}
+                  className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-2 ${locationMode === 'CITY'
+                    ? 'border-morocco-green bg-morocco-green/10 text-morocco-green'
+                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                    }`}
+                >
+                  <Building2 size={18} />
+                  Select City
+                </button>
+              </div>
+
+              {/* GPS Status */}
+              {locationMode === 'GPS' && (
+                <div className={`p-3 rounded-xl border flex items-center justify-between ${formData.latitude !== 0 ? 'border-morocco-green bg-morocco-green/5' : 'border-gray-200 bg-gray-50'
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${formData.latitude !== 0 ? 'bg-morocco-green text-white' : 'bg-gray-200 text-gray-500'
                       }`}>
-                      {formData.latitude !== 0
-                        ? t('onboarding_new.location_found')
-                        : t('onboarding_new.location_needed')
-                      }
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formData.latitude !== 0
-                        ? t('onboarding_new.ready_match')
-                        : t('onboarding_new.enable_gps')
-                      }
-                    </p>
+                      <MapPin size={20} />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-bold ${formData.latitude !== 0 ? 'text-morocco-green' : 'text-gray-500'
+                        }`}>
+                        {formData.latitude !== 0
+                          ? t('onboarding_new.location_found')
+                          : t('onboarding_new.location_needed')
+                        }
+                      </p>
+                      {formData.latitude === 0 && (
+                        <p className="text-xs text-gray-500">
+                          Tap 'GPS Location' again to retry
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
+              )}
 
-                {formData.latitude === 0 && (
-                  <button
-                    onClick={requestLocation}
-                    className="text-xs font-bold bg-white border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 shadow-sm"
+              {/* City Dropdown */}
+              {locationMode === 'CITY' && (
+                <div className="relative">
+                  <select
+                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-morocco-green focus:outline-none appearance-none bg-white"
+                    onChange={(e) => handleCitySelect(e.target.value)}
+                    value={formData.city === 'GPS Location' ? '' : formData.city}
                   >
-                    {t('onboarding_new.try_again')}
-                  </button>
-                )}
-              </div>
+                    <option value="">Choose your city...</option>
+                    {MOROCCAN_CITIES.sort((a, b) => a.name.localeCompare(b.name)).map(city => (
+                      <option key={city.name} value={city.name}>
+                        {city.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <ChevronDown size={20} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

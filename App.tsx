@@ -35,7 +35,7 @@ function App() {
 
   // Global Persistence State
   const [radius, setRadius] = useState<number>(5);
-  const [locationMode, setLocationMode] = useState<'GPS' | 'MANUAL'>('GPS');
+  const [locationMode, setLocationMode] = useState<'GPS' | 'MANUAL' | 'CITY'>('GPS');
   const [myLocation, setMyLocation] = useState<{ lat: number, lng: number } | null>(null);
 
   // Constants for Manual Location (Casablanca Center)
@@ -54,9 +54,11 @@ function App() {
           }
         );
       }
-    } else {
+    } else if (locationMode === 'MANUAL') {
       setMyLocation(CASABLANCA_COORDS);
     }
+    // For CITY mode, usually myLocation is set by the user's city coordinates. 
+    // We don't automatically overwrite it here unless it's null.
   }, [locationMode]);
 
   // We'll keep receivers mock for now or fetch users later
@@ -73,6 +75,15 @@ function App() {
           setUserRole(res.user.role || null);
           setHasOnboarded(true);
 
+          // Initialize Location from User Profile
+          if (res.user.latitude && res.user.longitude) {
+            setMyLocation({ lat: res.user.latitude, lng: res.user.longitude });
+            // If we have a stored location, we assume 'CITY' or 'MANUAL' mode to avoid 
+            // immediate GPS override, unless we persist "Use GPS" preference.
+            // For now, defaulting to CITY/MANUAL if location exists ensures they see what they signed up with.
+            setLocationMode('CITY');
+          }
+
           // Fetch Chats
           try {
             const myChats = await api.chats.getAll();
@@ -86,8 +97,18 @@ function App() {
             console.error("Failed chats", e);
           }
 
-          // Fetch Neighbors (if geolocation allowed)
-          if (navigator.geolocation) {
+          // Fetch Neighbors (if geolocation allowed or using manual loc)
+          // We use the location we just set
+          const targetLat = res.user.latitude || 0;
+          const targetLng = res.user.longitude || 0;
+
+          if (targetLat !== 0) {
+            try {
+              const neighbors = await api.users.getNeighbors(targetLat, targetLng);
+              setReceivers(neighbors);
+            } catch (e) { console.error("Failed neighbors", e) }
+          } else if (navigator.geolocation) {
+            // Fallback to GPS if no profile location
             navigator.geolocation.getCurrentPosition(async (pos) => {
               try {
                 const neighbors = await api.users.getNeighbors(pos.coords.latitude, pos.coords.longitude);
@@ -117,10 +138,21 @@ function App() {
     initApp();
   }, []);
 
-  const handleOnboardingComplete = (user: User) => {
+  const handleOnboardingComplete = (user: any) => {
     setCurrentUser(user);
     setUserRole(user.role as UserRole);
     setHasOnboarded(true);
+
+    if (user.latitude && user.longitude) {
+      setMyLocation({ lat: user.latitude, lng: user.longitude });
+    }
+
+    if (user.locationMode) {
+      setLocationMode(user.locationMode);
+    } else if (user.latitude) {
+      // Default to CITY if we have location but no explicit mode
+      setLocationMode('CITY');
+    }
   };
 
   // Logic to add a new Donation or Request
@@ -142,6 +174,8 @@ function App() {
       setHasOnboarded(false);
       setShowLanding(true);
       setActiveTab('home');
+      setMyLocation(null); // Reset location
+      setLocationMode('GPS');
     } catch (e) {
       console.error("Logout failed", e);
     }
@@ -309,6 +343,8 @@ function App() {
             setUserRole(updatedUser.role as UserRole);
           }}
           onLogout={handleLogout}
+          locationMode={locationMode}
+          setLocationMode={setLocationMode}
         />; // Pass data for history
       default:
         return <Home

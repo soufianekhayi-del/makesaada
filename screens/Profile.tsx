@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star, Package, Shirt, Settings, LogOut, Globe } from 'lucide-react'; // Added Globe icon
+import { Star, Package, Shirt, Settings, LogOut, Globe, MapPin } from 'lucide-react'; // Added Globe icon
 
 import { Item, User } from '../types';
 
@@ -11,9 +11,11 @@ interface ProfileProps {
     items: Item[];
     onUpdateUser: (user: User) => void;
     onLogout: () => void;
+    locationMode?: 'GPS' | 'MANUAL' | 'CITY';
+    setLocationMode?: (mode: 'GPS' | 'MANUAL' | 'CITY') => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ currentUser, items, onUpdateUser, onLogout }) => {
+export const Profile: React.FC<ProfileProps> = ({ currentUser, items, onUpdateUser, onLogout, locationMode, setLocationMode }) => {
     const { t, i18n } = useTranslation();
     const [viewMode, setViewMode] = React.useState<'STATS' | 'MEALS' | 'ITEMS'>('STATS');
     const [switching, setSwitching] = React.useState(false);
@@ -40,6 +42,17 @@ export const Profile: React.FC<ProfileProps> = ({ currentUser, items, onUpdateUs
             setSwitching(false);
         }
     }
+
+    const toggleGPS = () => {
+        if (setLocationMode) {
+            if (locationMode === 'GPS') {
+                alert("GPS is already active.");
+            } else {
+                setLocationMode('GPS');
+                alert("Switched to GPS mode. Location will update.");
+            }
+        }
+    };
 
     if (!currentUser) return null;
 
@@ -160,6 +173,17 @@ export const Profile: React.FC<ProfileProps> = ({ currentUser, items, onUpdateUs
                         {switching && <span className="text-xs text-gray-400">...</span>}
                     </button>
 
+
+                    <button
+                        onClick={toggleGPS}
+                        className="w-full p-4 text-left text-sm font-medium text-gray-600 border-b border-gray-50 active:bg-gray-50 flex items-center justify-between"
+                    >
+                        <span className="flex items-center gap-2">
+                            <MapPin size={16} />
+                            {locationMode === 'GPS' ? t('profile.locationGPS') || 'Location: GPS (Active)' : t('profile.locationCity') || 'Location: City Mode'}
+                        </span>
+                        {locationMode !== 'GPS' && <span className="text-xs font-bold text-morocco-green">Enable GPS</span>}
+                    </button>
 
                     <button className="w-full p-4 text-left text-sm font-medium text-gray-600 border-b border-gray-50 active:bg-gray-50">
                         {t('profile.notifications')}
