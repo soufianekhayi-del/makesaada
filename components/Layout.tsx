@@ -67,7 +67,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="min-h-full pb-24 md:pb-0 h-full"
+              className="min-h-full pb-24 md:pb-0 h-full w-full"
             >
               {children}
             </motion.div>

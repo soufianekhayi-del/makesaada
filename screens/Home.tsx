@@ -12,23 +12,17 @@ interface HomeProps {
   receivers: UserType[];
   onOfferHelp: (item: Item) => void;
   onContactUser: (user: UserType) => void;
-  radius: number;
-  setRadius: (r: number) => void;
-  locationMode: 'GPS' | 'MANUAL';
-  setLocationMode: (mode: 'GPS' | 'MANUAL') => void;
-  myLocation: { lat: number, lng: number } | null;
+  myLocation: { lat: number; lng: number } | null;
 }
 
 export const Home: React.FC<HomeProps> = ({
-  userRole, items, receivers, onOfferHelp, onContactUser,
-  radius, setRadius, locationMode, setLocationMode, myLocation
+  userRole, items, receivers, onOfferHelp, onContactUser, myLocation
 }) => {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<'ALL' | 'FOOD' | 'CLOTHES' | 'OTHERS'>('ALL');
   const [viewMode, setViewMode] = useState<'REQUESTS' | 'NEIGHBORS'>('REQUESTS');
 
-  // Constants for Manual Location (Casablanca Center)
-  const CASABLANCA_COORDS = { lat: 33.5731, lng: -7.5898 };
+
 
   // Logic: 
   // If User is GIVER -> Show REQUESTS
@@ -42,19 +36,7 @@ export const Home: React.FC<HomeProps> = ({
     // 2. Type Filter
     if (filter !== 'ALL' && item.type !== filter) return false;
 
-    // 3. Distance Filter
-    // Always use myLocation if available (which satisfies GPS or MANUAL)
-    if (myLocation && (item.latitude || item.location)) {
-      const itemLat = (item as any).latitude || CASABLANCA_COORDS.lat;
-      const itemLng = (item as any).longitude || CASABLANCA_COORDS.lng;
 
-      const dist = api.utils.calculateDistance(myLocation.lat, myLocation.lng, itemLat, itemLng);
-
-      // Update item distance for display
-      item.distance = api.utils.formatDistance(dist);
-
-      if (dist > radius) return false;
-    }
 
     return true;
   });
@@ -62,7 +44,7 @@ export const Home: React.FC<HomeProps> = ({
   const title = userRole === 'GIVER' ? t('home.requestsNearby') : t('home.donationsNearby');
 
   return (
-    <div className="pt-6 px-4 h-full flex flex-col">
+    <div className="pt-6 px-4 h-full flex-1 w-full flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -71,103 +53,85 @@ export const Home: React.FC<HomeProps> = ({
           </h1>
 
           <div className="flex items-center gap-2 mt-2">
-            <div
-              className="flex items-center gap-1 text-xs border border-morocco-green/20 bg-morocco-green/5 rounded-full px-2 py-1"
-            >
-              <MapPin size={12} className="text-morocco-green" />
-              <span className="font-medium text-morocco-green">
-                {t('chat.currentLocation')}
-              </span>
-            </div>
-            <span className="text-xs text-gray-400">•</span>
-            <p className="text-xs text-gray-500 font-mono">{radius} km</p>
           </div>
-          <input
-            type="range"
-            min="1"
-            max="50"
-            value={radius}
-            onChange={(e) => setRadius(parseInt(e.target.value))}
-            className="w-32 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2"
-          />
         </div>
+
+        {/* Giver View Toggle (Requests vs Neighbors) */}
+        {userRole === 'GIVER' && (
+          <div className="bg-white p-1 rounded-xl flex mb-6 border border-gray-100 shadow-sm">
+            <button
+              onClick={() => setViewMode('REQUESTS')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${viewMode === 'REQUESTS' ? 'bg-morocco-green text-white shadow-md' : 'text-gray-400 hover:text-morocco-green'}`}
+            >
+              {t('home.viewRequests')}
+            </button>
+            <button
+              onClick={() => setViewMode('NEIGHBORS')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${viewMode === 'NEIGHBORS' ? 'bg-morocco-green text-white shadow-md' : 'text-gray-400 hover:text-morocco-green'}`}
+            >
+              {t('home.viewNeighbors')}
+            </button>
+          </div>
+        )}
+
+        {/* Item Filters (Only show if in Item mode) */}
+        {viewMode === 'REQUESTS' && (
+          <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar pb-2 shrink-0 px-2 -mx-2 md:px-0 md:-mx-0">
+            <button
+              onClick={() => setFilter('ALL')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'ALL' ? 'bg-morocco-charcoal text-white border-morocco-charcoal' : 'bg-white text-gray-600 border-gray-200'}`}
+            >
+              {t('home.filterAll')}
+            </button>
+            <button
+              onClick={() => setFilter('FOOD')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'FOOD' ? 'bg-morocco-green text-white border-morocco-green' : 'bg-white text-gray-600 border-gray-200'}`}
+            >
+              <Package size={14} /> {t('home.filterFood')}
+            </button>
+            <button
+              onClick={() => setFilter('CLOTHES')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'CLOTHES' ? 'bg-morocco-terracotta text-white border-morocco-terracotta' : 'bg-white text-gray-600 border-gray-200'}`}
+            >
+              <Shirt size={14} /> {t('home.filterClothes')}
+            </button>
+            <button
+              onClick={() => setFilter('OTHERS')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'OTHERS' ? 'bg-morocco-sandDark text-morocco-charcoal border-morocco-sandDark' : 'bg-white text-gray-600 border-gray-200'}`}
+            >
+              <Archive size={14} /> {t('create.others')}
+            </button>
+          </div>
+        )}
+
+        {/* Content Area */}
+        {viewMode === 'REQUESTS' ? (
+          <div className="w-full space-y-4 pb-20 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:space-y-0">
+            {filteredItems.length === 0 ? (
+              <div className="w-full text-center py-10 opacity-50 col-span-full">
+                <p className="text-gray-500 w-full">{t(filter === 'ALL' ? (viewMode === 'REQUESTS' ? 'home.emptyRequests' : 'home.emptyDonations') : 'home.emptyDonations')}</p>
+              </div>
+            ) : (
+              filteredItems.map((item, index) => (
+                <DonationCard
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  userRole={userRole}
+                  onAction={() => item.kind === 'REQUEST' ? onOfferHelp(item) : onOfferHelp(item)}
+                />
+              ))
+            )}
+          </div>
+        ) : (
+          // NEIGHBORS VIEW (Registered Receivers)
+          <div className="space-y-4 pb-20 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:space-y-0">
+            {receivers.map((user, index) => (
+              <NeighborCard key={user.id} user={user} index={index} onContact={() => onContactUser(user)} />
+            ))}
+          </div>
+        )}
       </div>
-
-      {/* Giver View Toggle (Requests vs Neighbors) */}
-      {userRole === 'GIVER' && (
-        <div className="bg-white p-1 rounded-xl flex mb-6 border border-gray-100 shadow-sm">
-          <button
-            onClick={() => setViewMode('REQUESTS')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${viewMode === 'REQUESTS' ? 'bg-morocco-green text-white shadow-md' : 'text-gray-400 hover:text-morocco-green'}`}
-          >
-            {t('home.viewRequests')}
-          </button>
-          <button
-            onClick={() => setViewMode('NEIGHBORS')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${viewMode === 'NEIGHBORS' ? 'bg-morocco-green text-white shadow-md' : 'text-gray-400 hover:text-morocco-green'}`}
-          >
-            {t('home.viewNeighbors')}
-          </button>
-        </div>
-      )}
-
-      {/* Item Filters (Only show if in Item mode) */}
-      {viewMode === 'REQUESTS' && (
-        <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar pb-2 shrink-0">
-          <button
-            onClick={() => setFilter('ALL')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'ALL' ? 'bg-morocco-charcoal text-white border-morocco-charcoal' : 'bg-white text-gray-600 border-gray-200'}`}
-          >
-            {t('home.filterAll')}
-          </button>
-          <button
-            onClick={() => setFilter('FOOD')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'FOOD' ? 'bg-morocco-green text-white border-morocco-green' : 'bg-white text-gray-600 border-gray-200'}`}
-          >
-            <Package size={14} /> {t('home.filterFood')}
-          </button>
-          <button
-            onClick={() => setFilter('CLOTHES')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'CLOTHES' ? 'bg-morocco-terracotta text-white border-morocco-terracotta' : 'bg-white text-gray-600 border-gray-200'}`}
-          >
-            <Shirt size={14} /> {t('home.filterClothes')}
-          </button>
-          <button
-            onClick={() => setFilter('OTHERS')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${filter === 'OTHERS' ? 'bg-morocco-sandDark text-morocco-charcoal border-morocco-sandDark' : 'bg-white text-gray-600 border-gray-200'}`}
-          >
-            <Archive size={14} /> {t('create.others')}
-          </button>
-        </div>
-      )}
-
-      {/* Content Area */}
-      {viewMode === 'REQUESTS' ? (
-        <div className="space-y-4 pb-20 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:space-y-0">
-          {filteredItems.length === 0 ? (
-            <div className="text-center py-10 opacity-50 col-span-full">
-              <p className="text-gray-500">{t(filter === 'ALL' ? (viewMode === 'REQUESTS' ? 'home.emptyRequests' : 'home.emptyDonations') : 'home.emptyDonations')}</p>
-            </div>
-          ) : (
-            filteredItems.map((item, index) => (
-              <DonationCard
-                key={item.id}
-                item={item}
-                index={index}
-                userRole={userRole}
-                onAction={() => item.kind === 'REQUEST' ? onOfferHelp(item) : onOfferHelp(item)}
-              />
-            ))
-          )}
-        </div>
-      ) : (
-        // NEIGHBORS VIEW (Registered Receivers)
-        <div className="space-y-4 pb-20 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:space-y-0">
-          {receivers.map((user, index) => (
-            <NeighborCard key={user.id} user={user} index={index} onContact={() => onContactUser(user)} />
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -188,7 +152,6 @@ const NeighborCard: React.FC<{ user: UserType; index: number; onContact: () => v
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <h3 className="font-bold text-morocco-charcoal">{user.name}</h3>
-            <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{user.distance}</span>
           </div>
           <p className="text-sm text-gray-600 mt-1 mb-2 leading-relaxed">{user.bio}</p>
           <div className="flex gap-2 mb-3">
@@ -234,7 +197,6 @@ const DonationCard: React.FC<{ item: Item; index: number; userRole: UserRole; on
             ? `${t('home.requested')}: ${item.type === 'FOOD' ? t('create.food') : (item.type === 'CLOTHES' ? t('create.clothes') : t('create.others'))}`
             : (item.type === 'FOOD' ? t('create.food') : (item.type === 'CLOTHES' ? t('create.clothes') : t('create.others')))}
         </div>
-        <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{item.distance}</span>
       </div>
 
       <h3 className="font-bold text-morocco-charcoal text-lg mb-1">{item.title}</h3>

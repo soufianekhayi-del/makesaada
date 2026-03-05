@@ -24,42 +24,16 @@ function App() {
     document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
   }, [i18n.language]);
 
-  // We want to show Landing page first always (like a website), 
-  // then check auth when they click "Start".
-  // So we remove the auto-skip effect.
-
   // Global Data State
   const [items, setItems] = useState<Item[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Global Persistence State
-  const [radius, setRadius] = useState<number>(5);
-  const [locationMode, setLocationMode] = useState<'GPS' | 'MANUAL' | 'CITY'>('GPS');
+  const [locationMode, setLocationMode] = useState<'CITY'>('CITY');
   const [myLocation, setMyLocation] = useState<{ lat: number, lng: number } | null>(null);
 
-  // Constants for Manual Location (Casablanca Center)
-  const CASABLANCA_COORDS = { lat: 33.5731, lng: -7.5898 };
 
-  React.useEffect(() => {
-    if (locationMode === 'GPS') {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          },
-          (err) => {
-            console.log("Loc error", err);
-            // Fallback could go here
-          }
-        );
-      }
-    } else if (locationMode === 'MANUAL') {
-      setMyLocation(CASABLANCA_COORDS);
-    }
-    // For CITY mode, usually myLocation is set by the user's city coordinates. 
-    // We don't automatically overwrite it here unless it's null.
-  }, [locationMode]);
 
   // We'll keep receivers mock for now or fetch users later
   const [receivers, setReceivers] = useState<User[]>([]);
@@ -148,7 +122,7 @@ function App() {
     }
 
     if (user.locationMode) {
-      setLocationMode(user.locationMode);
+      setLocationMode(user.locationMode as 'CITY');
     } else if (user.latitude) {
       // Default to CITY if we have location but no explicit mode
       setLocationMode('CITY');
@@ -175,7 +149,7 @@ function App() {
       setShowLanding(true);
       setActiveTab('home');
       setMyLocation(null); // Reset location
-      setLocationMode('GPS');
+      setLocationMode('CITY');
     } catch (e) {
       console.error("Logout failed", e);
     }
@@ -314,10 +288,6 @@ function App() {
           receivers={receivers}
           onOfferHelp={handleOfferHelp}
           onContactUser={handleContactUser}
-          radius={radius}
-          setRadius={setRadius}
-          locationMode={locationMode}
-          setLocationMode={setLocationMode}
           myLocation={myLocation}
         />;
       case 'create':
@@ -343,16 +313,13 @@ function App() {
             setUserRole(updatedUser.role as UserRole);
           }}
           onLogout={handleLogout}
-          locationMode={locationMode}
-          setLocationMode={setLocationMode}
         />; // Pass data for history
-      default:
         return <Home
-          userRole={userRole}
+          userRole={userRole as UserRole}
           items={items}
           receivers={receivers}
           onOfferHelp={handleOfferHelp}
-          setLocationMode={setLocationMode}
+          onContactUser={handleContactUser}
           myLocation={myLocation}
         />;
     }

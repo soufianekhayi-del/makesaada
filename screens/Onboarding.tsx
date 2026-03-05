@@ -19,42 +19,15 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [isLoginMode, setIsLoginMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [locError, setLocError] = useState(false);
-  const [locationMode, setLocationMode] = useState<'GPS' | 'CITY' | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     username: '',
     password: '',
     city: '',
     latitude: 0,
-    longitude: 0,
-    locationMode: 'GPS' // Default for backend, but UI will override
+    longitude: 0
   });
 
-  const requestLocation = () => {
-    setLocError(false);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFormData(prev => ({
-            ...prev,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            city: 'GPS Location',
-            locationMode: 'GPS'
-          }));
-          setLocationMode('GPS');
-        },
-        (error) => {
-          console.error("Location error:", error);
-          setLocError(true);
-          // Don't alert immediately, just show error state in UI
-        }
-      );
-    } else {
-      setLocError(true);
-      alert("Geolocation is not supported by this browser.");
-    }
-  };
 
   const handleCitySelect = (cityName: string) => {
     const cityData = MOROCCAN_CITIES.find(c => c.name === cityName);
@@ -63,10 +36,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         ...prev,
         city: cityData.name,
         latitude: cityData.lat,
-        longitude: cityData.lng,
-        locationMode: 'CITY'
+        longitude: cityData.lng
       }));
-      setLocationMode('CITY');
     }
   };
 
@@ -116,7 +87,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         // If user registered with CITY mode, we might want to store that preference
         // locally or ensuring backend returns it used for App.tsx state.
         // For now, onComplete passes the user object.
-        const userWithMode = { ...res.user, locationMode: locationMode || 'GPS' };
+        const userWithMode = { ...res.user, locationMode: 'CITY' };
         onComplete(userWithMode);
       }
     } catch (error: any) {
@@ -362,89 +333,28 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
             {/* Location Selection Section */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t('onboarding_new.location_required')}
               </label>
 
-              {/* Toggle / Tabs */}
-              <div className="flex gap-2 mb-2">
-                <button
-                  onClick={requestLocation}
-                  className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-2 ${locationMode === 'GPS'
-                    ? 'border-morocco-green bg-morocco-green/10 text-morocco-green'
-                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
-                    }`}
-                >
-                  <MapPin size={18} />
-                  GPS Location
-                </button>
-                <button
-                  onClick={() => {
-                    setLocationMode('CITY');
-                    setFormData(prev => ({
-                      ...prev,
-                      latitude: 0, // Reset until city selected
-                      city: '',
-                      locationMode: 'CITY'
-                    }));
-                  }}
-                  className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-2 ${locationMode === 'CITY'
-                    ? 'border-morocco-green bg-morocco-green/10 text-morocco-green'
-                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
-                    }`}
-                >
-                  <Building2 size={18} />
-                  Select City
-                </button>
-              </div>
-
-              {/* GPS Status */}
-              {locationMode === 'GPS' && (
-                <div className={`p-3 rounded-xl border flex items-center justify-between ${formData.latitude !== 0 ? 'border-morocco-green bg-morocco-green/5' : 'border-gray-200 bg-gray-50'
-                  }`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${formData.latitude !== 0 ? 'bg-morocco-green text-white' : 'bg-gray-200 text-gray-500'
-                      }`}>
-                      <MapPin size={20} />
-                    </div>
-                    <div>
-                      <p className={`text-sm font-bold ${formData.latitude !== 0 ? 'text-morocco-green' : 'text-gray-500'
-                        }`}>
-                        {formData.latitude !== 0
-                          ? t('onboarding_new.location_found')
-                          : t('onboarding_new.location_needed')
-                        }
-                      </p>
-                      {formData.latitude === 0 && (
-                        <p className="text-xs text-gray-500">
-                          Tap 'GPS Location' again to retry
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* City Dropdown */}
-              {locationMode === 'CITY' && (
-                <div className="relative">
-                  <select
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-morocco-green focus:outline-none appearance-none bg-white"
-                    onChange={(e) => handleCitySelect(e.target.value)}
-                    value={formData.city === 'GPS Location' ? '' : formData.city}
-                  >
-                    <option value="">Choose your city...</option>
-                    {MOROCCAN_CITIES.sort((a, b) => a.name.localeCompare(b.name)).map(city => (
-                      <option key={city.name} value={city.name}>
-                        {city.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                    <ChevronDown size={20} />
-                  </div>
+              <div className="relative">
+                <select
+                  className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-morocco-green focus:outline-none appearance-none bg-white"
+                  onChange={(e) => handleCitySelect(e.target.value)}
+                  value={formData.city}
+                >
+                  <option value="">Choose your city...</option>
+                  {MOROCCAN_CITIES.sort((a, b) => a.name.localeCompare(b.name)).map(city => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                  <ChevronDown size={20} />
                 </div>
-              )}
+              </div>
             </div>
           </div>
 

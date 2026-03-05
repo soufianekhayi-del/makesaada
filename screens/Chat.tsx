@@ -131,42 +131,6 @@ export const Chat: React.FC<ChatProps> = ({ chats, onSendMessage, onSendLocation
                 </div>
 
                 <div className="space-y-4">
-                  {/* Option 1: Current GPS */}
-                  <button
-                    onClick={() => {
-                      if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition((pos) => {
-                          const loc: Location = {
-                            lat: pos.coords.latitude,
-                            lng: pos.coords.longitude,
-                            label: t('chat.currentLocation')
-                          };
-                          handleLocationSelect(loc);
-                        }, (err) => {
-                          console.error(err);
-                          alert("Unable to retrieve location. Please check permissions.");
-                        });
-                      } else {
-                        alert("Geolocation not supported");
-                      }
-                    }}
-                    className="w-full p-4 flex items-center gap-3 bg-morocco-green/10 rounded-xl hover:bg-morocco-green/20 active:scale-98 transition-all text-left border border-morocco-green/30"
-                  >
-                    <div className="p-2 bg-white rounded-full text-morocco-green animate-pulse">
-                      <MapPin size={18} />
-                    </div>
-                    <div>
-                      <span className="font-bold text-morocco-green block">{t('chat.currentLocation')}</span>
-                      <span className="text-xs text-gray-500">{t('chat_new.send_gps_desc')}</span>
-                    </div>
-                  </button>
-
-                  <div className="relative flex py-2 items-center">
-                    <div className="flex-grow border-t border-gray-200"></div>
-                    <span className="flex-shrink-0 mx-4 text-gray-400 text-xs">{t('chat_new.or_use_maps')}</span>
-                    <div className="flex-grow border-t border-gray-200"></div>
-                  </div>
-
                   {/* Option 2: Open Google Maps & Paste */}
                   <div className="space-y-3">
                     <a

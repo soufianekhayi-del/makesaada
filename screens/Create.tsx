@@ -28,11 +28,6 @@ export const Create: React.FC<CreateProps> = ({ userRole, onAddItem, currentLoca
   const handleSubmit = () => {
     if (!titleInput || !quantityInput || !descriptionInput) return;
 
-    if (!currentLocation) {
-      alert("Please enable GPS to post items.");
-      return;
-    }
-
     const newItem: Item = {
       id: Date.now().toString(),
       kind: isGiver ? 'OFFER' : 'REQUEST',
@@ -44,8 +39,8 @@ export const Create: React.FC<CreateProps> = ({ userRole, onAddItem, currentLoca
       isAnonymous: isAnonymous,
       createdAt: 'Just now',
       status: 'AVAILABLE',
-      latitude: currentLocation.lat,
-      longitude: currentLocation.lng
+      latitude: currentLocation ? currentLocation.lat : 0,
+      longitude: currentLocation ? currentLocation.lng : 0
     };
 
     onAddItem(newItem);

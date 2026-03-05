@@ -164,7 +164,27 @@ export const api = {
         create: async (data: any) => {
             const { title, description, quantity, type, kind, location, isAnonymous, urgent, latitude, longitude } = data;
             const { data: userData } = await supabase.auth.getUser();
-            if (!userData.user) throw new Error("Not authenticated");
+
+            // Demo Mode fallback
+            if (!userData.user) {
+                console.warn("Demo mode: Mocking item creation without auth");
+                const newItem = {
+                    id: Date.now().toString(),
+                    title,
+                    description,
+                    quantity,
+                    category: type,
+                    type: kind,
+                    location: location || 'Casablanca',
+                    is_anonymous: isAnonymous,
+                    urgent,
+                    latitude,
+                    longitude,
+                    user_id: 'demo-user-123',
+                    created_at: new Date().toISOString() // needed for sorting
+                };
+                return newItem;
+            }
 
             // Frontend handles 'type' and 'kind' differently than DB schema potentially
             // frontend: type=FOOD, kind=OFFER
@@ -236,7 +256,7 @@ export const api = {
                 const otherParticipant = chat.chat_participants.find((p: any) => p.user.id !== userId);
                 const otherUser = otherParticipant?.user;
                 // Safely handle if Supabase returns array or object for single relation
-                const otherUserRole = otherUser ? (Array.isArray(otherUser) ? otherUser[0]?.name : otherUser.name) : 'Unknown';
+                const otherUserRole = otherUser ? (Array.isArray(otherUser) ? (otherUser[0] as any)?.name : (otherUser as any).name) : 'Unknown';
 
                 return {
                     id: chat.id,
